@@ -9,6 +9,8 @@ enum Operation {
     OP_PUSH,
     OP_ADD,
     OP_SUB,
+    OP_MUL,
+    OP_DIV,
     OP_EQ,
     OP_DUMP,
     OP_IF,
@@ -63,6 +65,12 @@ fn generate_asm(file: impl AsRef<Path>, code: Vec<(Operation, Option<&str>)>) ->
             Operation::OP_SUB => {
                 file.write_all("    pop rax\n    pop rbx\n    sub rbx, rax\n    push rbx\n".as_bytes())?;
             }
+            Operation::OP_MUL => {
+                file.write_all("    pop rax\n    pop rbx\n    imul rbx, rax\n    push rbx\n".as_bytes())?;
+            }
+            Operation::OP_DIV => {
+                file.write_all("    pop rax\n    pop rbx\n    cqo\n    idiv rbx\n    push rax\n".as_bytes())?;
+            }
             Operation::OP_DUMP => {
                 file.write_all("    pop rdi\n    call dump\n".as_bytes())?;
             }
@@ -99,6 +107,8 @@ fn parse_word_to_op(word: &str) -> (Operation, Option<&str>) {
         "-" => (Operation::OP_SUB, None),
         "." => (Operation::OP_DUMP, None),
         "=" => (Operation::OP_EQ, None),
+        "*" => (Operation::OP_MUL, None),
+        "/" => (Operation::OP_DIV, None),
         "if" => (Operation::OP_IF, None),
         "else" => (Operation::OP_ELSE, None),
         "end" => (Operation::OP_END, None),
